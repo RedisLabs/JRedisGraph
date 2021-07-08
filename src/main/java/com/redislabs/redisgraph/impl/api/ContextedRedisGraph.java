@@ -46,10 +46,18 @@ public class ContextedRedisGraph extends AbstractRedisGraph implements RedisGrap
      */
     @Override
     protected ResultSet sendQuery(String graphId, String preparedQuery) {
+        long startTime = System.nanoTime();
         Jedis conn = getConnection();
         try {
             List<Object> rawResponse = (List<Object>) conn.sendCommand(RedisGraphCommand.QUERY, graphId, preparedQuery, Utils.COMPACT_STRING);
-            return new ResultSetImpl(rawResponse, this, caches.getGraphCache(graphId));
+            long stopTime = System.nanoTime();
+            System.out.println("Server response time " + preparedQuery + " " + (stopTime - startTime)/1000000);
+
+            startTime = System.nanoTime();
+            ResultSet rs = new ResultSetImpl(rawResponse, this, caches.getGraphCache(graphId));
+            stopTime = System.nanoTime();
+            System.out.println("result set parsing " + preparedQuery + " "  + (stopTime - startTime)/1000000);
+            return rs;
         }
         catch (JRedisGraphException rt) {
             throw rt;

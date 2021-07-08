@@ -173,7 +173,10 @@ public abstract class AbstractRedisGraph implements RedisGraph {
 
     public ResultSet callProcedure(String graphId, String procedure, List<String> args  , Map<String, List<String>> kwargs){
 
+        long startTime = System.nanoTime();
         String preparedProcedure = Utils.prepareProcedure(procedure, args, kwargs);
+        long stopTime = System.nanoTime();
+        System.out.println("Prepare procedure " + procedure + " " + (stopTime - startTime)/1000000);
         return query(graphId, preparedProcedure);
     }
 }

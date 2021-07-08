@@ -11,7 +11,10 @@ public class RedisGraphCaches {
 
     public GraphCache getGraphCache(String graphId){
         if (!graphCaches.containsKey(graphId)){
+            long startTime = System.nanoTime();
             graphCaches.putIfAbsent(graphId, new GraphCache(graphId));
+            long stopTime = System.nanoTime();
+            System.out.println("Graph Cache Create" + (stopTime - startTime)/1000000);
         }
         return graphCaches.get(graphId);
     }
