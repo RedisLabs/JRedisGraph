@@ -4,9 +4,9 @@ import com.redislabs.redisgraph.Statistics.Label;
 import com.redislabs.redisgraph.graph_entities.Edge;
 import com.redislabs.redisgraph.graph_entities.Node;
 import com.redislabs.redisgraph.graph_entities.Path;
+import com.redislabs.redisgraph.graph_entities.Point;
 import com.redislabs.redisgraph.graph_entities.Property;
 import com.redislabs.redisgraph.impl.api.RedisGraph;
-import com.redislabs.redisgraph.impl.resultset.RecordImpl;
 import com.redislabs.redisgraph.impl.resultset.ResultSetImpl;
 import com.redislabs.redisgraph.test.utils.PathBuilder;
 
@@ -1000,6 +1000,45 @@ public class RedisGraphAPITest {
     }
 
     @Test
+    public void testGeoPointLatLon() {
+        ResultSet rs = api.query("social", "CREATE (:restaurant"
+                + " {location: point({latitude:30.27822306, longitude:-97.75134723})})");
+        Assert.assertEquals(1, rs.getStatistics().nodesCreated());
+        Assert.assertEquals(1, rs.getStatistics().propertiesSet());
+
+        assertTestGeoPoint();
+    }
+
+    @Test
+    public void testGeoPointLonLat() {
+        ResultSet rs = api.query("social", "CREATE (:restaurant"
+                + " {location: point({longitude:-97.75134723, latitude:30.27822306})})");
+        Assert.assertEquals(1, rs.getStatistics().nodesCreated());
+        Assert.assertEquals(1, rs.getStatistics().propertiesSet());
+
+        assertTestGeoPoint();
+    }
+
+    private void assertTestGeoPoint() {
+        ResultSet results = api.query("social", "MATCH (restaurant) RETURN restaurant");
+        Assert.assertEquals(1, results.size());
+        Record record = results.next();
+        Assert.assertEquals(1, record.size());
+        Assert.assertEquals(Collections.singletonList("restaurant"), record.keys());
+        Node node = record.getValue(0);
+        Property property = node.getProperty("location");
+        Assert.assertEquals(new Point(30.27822306, -97.75134723), property.getValue());
+    }
+
+    @Test
+    public void timeoutArgument() {
+        ResultSet rs = api.query("social", "UNWIND range(0,100) AS x WITH x AS x WHERE x = 100 RETURN x", 1L);
+        Assert.assertEquals(1, rs.size());
+        Record r = rs.next();
+        Assert.assertEquals(Long.valueOf(100), r.getValue(0));
+    }
+
+    @Test
     public void testCachedExecutionReadOnly() {
         api.query("social", "CREATE (:N {val:1}), (:N {val:2})");
 
@@ -1021,14 +1060,6 @@ public class RedisGraphAPITest {
         r = resultSet.next();
         Assert.assertEquals(params.get("val"), r.getValue(0));
         Assert.assertTrue(resultSet.getStatistics().cachedExecution());
-    }
-
-    @Test
-    public void timeoutArgument() {
-        ResultSet rs = api.query("social", "UNWIND range(0,100) AS x WITH x AS x WHERE x = 100 RETURN x", 1L);
-        Assert.assertEquals(1, rs.size());
-        Record r = rs.next();
-        Assert.assertEquals(Long.valueOf(100), r.getValue(0));
     }
 
     @Test

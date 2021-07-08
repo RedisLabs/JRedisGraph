@@ -8,6 +8,7 @@ import com.redislabs.redisgraph.Statistics;
 import com.redislabs.redisgraph.exceptions.JRedisGraphException;
 import com.redislabs.redisgraph.graph_entities.*;
 import com.redislabs.redisgraph.impl.graph_cache.GraphCache;
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -239,10 +240,16 @@ public class ResultSetImpl implements ResultSet {
                 return deserializePath(obj);
             case VALUE_MAP:
                 return deserializeMap(obj);
+            case VALUE_POINT:
+                return deserializePoint(obj);
             case VALUE_UNKNOWN:
             default:
                 return obj;
         }
+    }
+
+    private Object deserializePoint(Object rawScalarData) {
+        return new Point(BuilderFactory.DOUBLE_LIST.build(rawScalarData));
     }
 
     private Map<String, Object> deserializeMap(Object rawScalarData) {
