@@ -16,6 +16,12 @@ public interface RedisGraphContext extends RedisGraph {
      * @return Redis transactional object, over the connection context, with graph API capabilities
      */
     RedisGraphTransaction multi();
+    
+    /**
+     * Returns a Redis pipeline object, over the connection context, with graph API capabilities
+     * @return Redis pipeline object, over the connection context, with graph API capabilities
+     */
+    RedisGraphPipeline pipelined();
 
     /**
      * Perform watch over given Redis keys
